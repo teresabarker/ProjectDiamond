@@ -4,9 +4,8 @@
 # Author: Team 1, Teresa Barker and Asraa Alkurdi
 # Date Developed: October 9, 2019
 # Last Date Revised: November 13, 2019
-# Rev: 7
+# Rev: 8
 
-import base64
 import hmac
 import socket
 import ssl
@@ -14,6 +13,7 @@ from mongo import MongoDB
 import pysftp
 import hashlib
 import sys
+import base64
 
 try:
     # Receive the secure payload using TLS
@@ -39,30 +39,9 @@ try:
         break
 
     # Hash the JSON payload and append it to the message (HMAC SHA-256)
+    data = '{"payload":"hashLab"}' # FIXME to be JSON payload sent from app 1
+    checksum = hashlib.md5(data.encode()).hexdigest()
 
-    # specifying connection options
-    cnopts = pysftp.CnOpts()
-    cnopts.hostkeys = None
-    cinfo = {'cnopts': cnopts,
-             'host': 'oz-ist-linux-oakes',
-             'username': 'ftpuser',
-             'password': 'test1234',
-             'port': 100}
-
-    with pysftp.Connection(**cinfo) as sftp:
-        print("Connection made")
-        try:
-            print("Getting payload.json file")
-            sftp.get('/home/ftpuser/payloadReceiveBarker.json')
-
-            print("Removing transferred payload.json file")
-            # remove the transferred file using sftp
-            sftp.remove('/home/ftpuser/payloadReceiveBarker.json')
-        except:
-            print("Log exception 1: ", sys.exc_info()[0])
-
-    # Use SFTP to send the payload to App 3
-    data = '{"payload":"hashLab"}'
     checksum = hashlib.sha256(data.encode()).hexdigest()
     print("SHA256: ", checksum)
 
@@ -84,6 +63,30 @@ try:
     # perform base64 encoding on the signature
     encodedSignature = base64.urlsafe_b64encode(signature)
     print('signature encoded in base64: ', encodedSignature)
+
+    # compare two digests using compare_digest()
+    compareDigests = hmac.compare_digest(signature, encodedSignature)
+    print('signature and encodedSignature comparison: ', compareDigests)
+    # Use SFTP to send the payload to App 3
+
+    # specifying connection options
+    cnopts = pysftp.CnOpts()
+    cnopts.hostkeys = None
+    cinfo = {'cnopts': cnopts,
+             'host': 'oz-ist-linux-oakes',
+             'username': 'TeresaBarker',
+             'password': 'Ta37gFwWcX',
+             'port': 100}
+
+    with pysftp.Connection(**cinfo) as sftp:
+        print("Connection made")
+        try:
+            print("Getting payload.json file")
+            sftp.get('/home/TeresaBarker/abist411fa19Team1/App2/payload.json')
+            sftp.put('/home/TeresaBarker/abist411fa19Team1/App3')
+        except:
+            print("Log exception 1: ", sys.exc_info()[0])
+
 
 except Exception as e:
     print(e)
