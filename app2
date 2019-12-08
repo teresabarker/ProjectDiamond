@@ -75,7 +75,7 @@ try:
     cinfo = {'cnopts': cnopts,
              'host': 'oz-ist-linux-oakes',
              'username': 'TeresaBarker',
-             'password': 'Ta37gFwWcX',
+             'password': '1234',
              'port': 100}
 
     with pysftp.Connection(**cinfo) as sftp:
